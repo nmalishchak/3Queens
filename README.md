@@ -6,8 +6,14 @@ Generates a solution for the N-Queens problem where N-number of queens are place
 
 ## Arguments
 -n <NumberOfQueens>: Specifies the number of queens to attempt to place. Size of the board will be <NumberOfQueens>x<NumberOfQueens> unless otherwise specified using the -size or                      -BoardX/-BoardY switches.
+
 -size <board size>: Sets the size of the board to <board size>x<board size>. Overwritten by BoardX or BoardY switches
+
 -BoardX <board width>: Sets the width of the board to <board width>. Overwrites values from size switch
+
 -BoardY <board height>: Sets the height of the board to <board height>. Overwrites values from size switch
--algorithm <#>: Sets which algorithm to use.
+
+-algorithm <#>: Sets which algorithm to use. Defaults to 1. 0=AngleCheckScannerFullRestart, 1=AngleCheckScannerUndo
+
 -logging <#>. Sets logging level to 0-3. Defaults to 1. 0=NONE, 1=SUMMARY, 2=VERBOSE, 3=DEBUG
+
