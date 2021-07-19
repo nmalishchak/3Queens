@@ -17,3 +17,24 @@ Generates a solution for the N-Queens problem where N-number of queens are place
 
 -logging <#>. Sets logging level to 0-3. Defaults to 1. 0=NONE, 1=SUMMARY, 2=VERBOSE, 3=DEBUG
 
+## Benchmarks
+
+Single-Threaded Benchmarks on Windows 10 w/ i7-4890HQ @ 2.80 Ghz:  
+  
+===RUN SUMMARY===
+TARGET: 18 Queens. BOARD: 18x18.
+ALGORITHM: "AngleCheckScannerUndo." VERSION: 2.
+RESULT: Success.
+RUNTIME: 4544ms.
+
+===RUN SUMMARY===
+TARGET: 19 Queens. BOARD: 19x19.
+ALGORITHM: "AngleCheckScannerUndo." VERSION: 2.
+RESULT: Success.
+RUNTIME: 13407ms.
+
+===RUN SUMMARY===
+TARGET: 20 Queens. BOARD: 20x20.
+ALGORITHM: "AngleCheckScannerUndo." VERSION: 2.
+RESULT: Success.
+RUNTIME: 71182ms.
