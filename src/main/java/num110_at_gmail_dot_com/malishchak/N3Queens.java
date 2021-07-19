@@ -1,6 +1,7 @@
 package num110_at_gmail_dot_com.malishchak;
 
 import num110_at_gmail_dot_com.malishchak.algorithms.AngleCheckScannerFullRestart;
+import num110_at_gmail_dot_com.malishchak.algorithms.AngleCheckScannerUndo;
 import num110_at_gmail_dot_com.malishchak.algorithms.BaseN3QueensAlgorithm;
 
 import java.util.ArrayList;
@@ -26,7 +27,15 @@ public class N3Queens {
                                    "\t\t\t<NumberOfQueens>x<NumberOfQueens> unless\n" +
                                    "\t\t\totherwise specified using the -size switch.\n" +
                                    "\t\t-size <board size>: Sets the size of the board to\n" +
-                                   "\t\t\t<board size>x<board size>\n" +
+                                   "\t\t\t<board size>x<board size>. Overwritten by BoardX\n" +
+                                   "\t\t\tor BoardY switches\n" +
+                                   "\t\t-BoardX <board width>: Sets the width of the board to\n" +
+                                   "\t\t\t <board width>. Overwrites values from size switch\n" +
+                                   "\t\t-BoardY <board height>: Sets the height of the board to\n" +
+                                   "\t\t\t <board height>. Overwrites values from size switch\n" +
+                                   "\t\t-algorithm <#>: Sets which algorithm to use.\n" +
+                                   "\t\t-logging <#>. Sets logging level to 0-3. Defaults to 1.\n" +
+                                   "\t\t\t0=NONE, 1=SUMMARY, 2=VERBOSE, 3=DEBUG" +
                                    "\n" +
                                    "\tExamples:\n" +
                                    "\t\t./N3Queens -n 12\n" +
@@ -43,9 +52,15 @@ public class N3Queens {
 
     public static char[] m_Board;
 
+    public static BaseN3QueensAlgorithm m_CurrentAlgorithm = null;
+    public static int m_TargetAlgorithmIndex = 0;
+    public static int m_TargetLoggingLevel = BaseN3QueensAlgorithm.LOGGING_LEVEL_SUMMARY;
+
     public static void parseArguments(String[] args)
     {
         boolean argumentParseError = true;
+        boolean boardXSpecified = false;
+        boolean boardYSpecified = false;
         for(int i =0; i< args.length; i++)
         {
             argumentParseError = false;
@@ -75,8 +90,9 @@ public class N3Queens {
                     if((i+1)<args.length)
                     {
                         try {
-                            m_BoardHeight = Integer.parseInt(args[i + 1]);
-                            m_BoardWidth = m_BoardHeight;
+                            int value = Integer.parseInt(args[i + 1]);
+                            if(!boardYSpecified) m_BoardHeight = value;
+                            if(!boardXSpecified) m_BoardWidth = value;
                             i++;
                         }
                         catch (NumberFormatException e)
@@ -91,7 +107,93 @@ public class N3Queens {
                     }
                     break;
                 }
-                default: {
+                case "-BoardX": {
+                    if((i+1)<args.length)
+                    {
+                        boardXSpecified = true;
+                        try {
+                            m_BoardWidth = Integer.parseInt(args[i + 1]);
+                            i++;
+                        }
+                        catch (NumberFormatException e)
+                        {
+                            System.out.println("Error parsing BoardX:" + e);
+                            argumentParseError = true;
+                        }
+                    }
+                    else
+                    {
+                        argumentParseError = true;
+                    }
+                    break;
+                }
+                case "-BoardY": {
+                    boardYSpecified = true;
+                    if((i+1)<args.length)
+                    {
+                        try
+                        {
+                            m_BoardHeight = Integer.parseInt(args[i + 1]);
+                            i++;
+                        }
+                        catch (NumberFormatException e)
+                        {
+                            System.out.println("Error parsing BoardY:" + e);
+                            argumentParseError = true;
+                        }
+                    }
+                    else
+                    {
+                        argumentParseError = true;
+                    }
+                    break;
+                }
+                case "-algorithm": {
+                    if((i+1)<args.length)
+                    {
+                        try
+                        {
+                            m_TargetAlgorithmIndex = Integer.parseInt(args[i + 1]);
+                            i++;
+                        }
+                        catch (NumberFormatException e)
+                        {
+                            System.out.println("Error parsing algorithm number:" + e);
+                            argumentParseError = true;
+                        }
+                    }
+                    else
+                    {
+                        argumentParseError = true;
+                    }
+                    break;
+                }
+                case "-logging": {
+                    if((i+1)<args.length)
+                    {
+                        try
+                        {
+                            m_TargetLoggingLevel = Integer.parseInt(args[i + 1]);
+                            if(m_TargetLoggingLevel<0 || m_TargetLoggingLevel>3)
+                            {
+                                argumentParseError = true;
+                            }
+                            i++;
+                        }
+                        catch (NumberFormatException e)
+                        {
+                            System.out.println("Error parsing logging level:" + e);
+                            argumentParseError = true;
+                        }
+                    }
+                    else
+                    {
+                        argumentParseError = true;
+                    }
+                    break;
+                }
+                default:
+                {
                     argumentParseError = true;
                 }
             }
@@ -100,11 +202,32 @@ public class N3Queens {
                 break;
             }
         }
+
+        switch (m_TargetAlgorithmIndex)
+        {
+            case 0:
+            {
+                m_CurrentAlgorithm = new AngleCheckScannerFullRestart(m_TargetQueens, m_BoardWidth, m_BoardHeight);
+                break;
+            }
+            case 1:
+            {
+                m_CurrentAlgorithm = new AngleCheckScannerUndo(m_TargetQueens, m_BoardWidth, m_BoardHeight);
+                break;
+            }
+            default:
+            {
+                argumentParseError = true;
+            }
+        }
+
         if(argumentParseError)
         {
             System.out.println(m_Usage);
             System.exit(1);
         }
+
+
     }
 
     public static void main(String[] args) {
@@ -117,13 +240,19 @@ public class N3Queens {
         long secondTimerStart = 0;
         long secondTimerDuration = 0;
 
-        BaseN3QueensAlgorithm algorithm = new AngleCheckScannerFullRestart(m_TargetQueens, m_BoardWidth, m_BoardHeight);
-        algorithm.setKeepBestRun(true);
-        algorithm.setLoggingLevel(BaseN3QueensAlgorithm.LOGGING_LEVEL_SUMMARY);
+        if(m_CurrentAlgorithm == null)
+        {
+            m_CurrentAlgorithm = new AngleCheckScannerUndo(m_TargetQueens, m_BoardWidth, m_BoardHeight);
+        }
+        m_CurrentAlgorithm.setKeepBestRun(true);
+        m_CurrentAlgorithm.setLoggingLevel(m_TargetLoggingLevel);
+
+        System.out.println("\nRunning algorithm \""+m_CurrentAlgorithm.getAlgorithmName()+".\"");
+        System.out.println("\""+m_CurrentAlgorithm.getM_AlgorithmDescription()+"\"\n");
 
         System.out.println("Placing Queens...");
         timerStart = System.currentTimeMillis();
-        boolean success = algorithm.run();
+        boolean success = m_CurrentAlgorithm.run();
         timerDuration = System.currentTimeMillis() - timerStart;
         if(success) {
             System.out.println("\n\nSolution found in " + timerDuration + "ms total!");
@@ -131,13 +260,13 @@ public class N3Queens {
         else
         {
             System.out.println("\n\nNo solution found, attempt completed in " + timerDuration + "ms total.");
-            System.out.println((m_KeepBestRun ? "Best" : "Final")+" Run (Iteration "+algorithm.getBestIteration()+"): "+algorithm.getBestPlacedQueens().size()+" of "+m_TargetQueens+" placed. (Remaining: "+algorithm.getBestRemainingQueens()+").");
+            System.out.println((m_KeepBestRun ? "Best" : "Final")+" Run (Iteration "+m_CurrentAlgorithm.getBestIteration()+"): "+m_CurrentAlgorithm.getBestPlacedQueens().size()+" of "+m_TargetQueens+" placed. (Remaining: "+m_CurrentAlgorithm.getBestRemainingQueens()+").");
         }
 
         System.out.println("Queens placed at:");
-        for(int l=0; l<algorithm.getBestPlacedQueens().size(); l++)
+        for(int l=0; l<m_CurrentAlgorithm.getBestPlacedQueens().size(); l++)
         {
-            Queen q = algorithm.getBestPlacedQueens().get(l);
+            Queen q = m_CurrentAlgorithm.getBestPlacedQueens().get(l);
             System.out.println("\tQueen "+(l+1)+": ("+q.x+","+q.y+")");
         }
 
@@ -149,8 +278,8 @@ public class N3Queens {
             m_Board[i] = ' ';
         }
 
-        for (int qIndex = 0; qIndex < algorithm.getBestPlacedQueens().size(); qIndex++) {
-            Queen q = algorithm.getBestPlacedQueens().get(qIndex);
+        for (int qIndex = 0; qIndex < m_CurrentAlgorithm.getBestPlacedQueens().size(); qIndex++) {
+            Queen q = m_CurrentAlgorithm.getBestPlacedQueens().get(qIndex);
             m_Board[q.y * m_BoardWidth + q.x] = 'W';
         }
 
@@ -175,5 +304,12 @@ public class N3Queens {
         System.out.println(topBottomBorder);
         System.out.println(squareLettering);
 
+        System.out.println("\n");
+
+        System.out.println("===RUN SUMMARY===");
+        System.out.println("TARGET: "+m_TargetQueens+" Queens. BOARD: "+m_BoardWidth+"x"+m_BoardHeight+".");
+        System.out.println("ALGORITHM: \""+m_CurrentAlgorithm.getAlgorithmName()+".\"");
+        System.out.println("RESULT: "+(success ? "Success" : "Failure - Best Result was "+(m_TargetQueens - m_CurrentAlgorithm.getBestRemainingQueens())+" of "+m_TargetQueens+" placed."));
+        System.out.println("RUNTIME: "+timerDuration+"ms");
     }
 }
