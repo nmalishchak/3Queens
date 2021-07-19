@@ -2,7 +2,7 @@
 Proof of Concept tool to find solutions to the N-Queens problem with the additional constraint that no 3 queens can form a straight line at any angle, measured through the center of the squares.
 
 ## Overview
-Generates a solution for the N-Queens problem where N-number of queens are placed on a NxN size chess board such that no two queens can attach one another. Additionally, no three queens may be placed such that they form a straight line at any angle, measured through the center of their square.
+Generates a solution for the N-Queens problem where N-number of queens are placed on a NxN size chess board such that no two queens can attack one another. Additionally, no three queens may be placed such that they form a straight line at any angle, measured through the center of their square.
 
 ## Arguments
 -n <NumberOfQueens>: Specifies the number of queens to attempt to place. Size of the board will be <NumberOfQueens>x<NumberOfQueens> unless otherwise specified using the -size or                      -BoardX/-BoardY switches.
