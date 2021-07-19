@@ -16,8 +16,8 @@ public class N3Queens {
     public static String m_Usage = "Usage: ./N3Queens -n <NumberOfQueens> [-size <board size>]\n" +
                                    "\tGenerates a solution for the N-Queens problem where n\n" +
                                    "\tnumber of queens are placed on a NxN size chess board\n" +
-                                   "\tsuch that no two queens can attach one another.\n" +
-                                   "\tAdditionally, no three queens may be places such that\n" +
+                                   "\tsuch that no two queens can attack one another.\n" +
+                                   "\tAdditionally, no three queens may be placed such that\n" +
                                    "\tthey form a straight line at any angle, measured\n" +
                                    "\tthrough the center of their square.\n" +
                                    "\n" +
