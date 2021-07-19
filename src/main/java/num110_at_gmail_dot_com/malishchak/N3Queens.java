@@ -308,8 +308,8 @@ public class N3Queens {
 
         System.out.println("===RUN SUMMARY===");
         System.out.println("TARGET: "+m_TargetQueens+" Queens. BOARD: "+m_BoardWidth+"x"+m_BoardHeight+".");
-        System.out.println("ALGORITHM: \""+m_CurrentAlgorithm.getAlgorithmName()+".\"");
-        System.out.println("RESULT: "+(success ? "Success" : "Failure - Best Result was "+(m_TargetQueens - m_CurrentAlgorithm.getBestRemainingQueens())+" of "+m_TargetQueens+" placed."));
-        System.out.println("RUNTIME: "+timerDuration+"ms");
+        System.out.println("ALGORITHM: \""+m_CurrentAlgorithm.getAlgorithmName()+".\" VERSION: "+m_CurrentAlgorithm.getVersion()+".");
+        System.out.println("RESULT: "+(success ? "Success." : "Failure - Best Result was "+(m_TargetQueens - m_CurrentAlgorithm.getBestRemainingQueens())+" of "+m_TargetQueens+" placed."));
+        System.out.println("RUNTIME: "+timerDuration+"ms.");
     }
 }
