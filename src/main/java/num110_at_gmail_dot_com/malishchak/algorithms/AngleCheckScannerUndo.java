@@ -42,7 +42,6 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
 
     @Override
     public boolean run() {
-        boolean firsttest = false;
         m_RemainingQueens = m_TargetQueens;
         m_PlacedQueens.clear();
         m_IterationCount = 1;
@@ -58,22 +57,14 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                 }
                 for (int x = (y==m_YStartPosition ? m_XStartPosition : 0); x < m_BoardWidth; x++)
                 {
-                    if (m_PlacedQueens.isEmpty() && !firsttest) {
+                    if (m_PlacedQueens.isEmpty()) {
                         m_PlacedQueens.add(new Queen(x, y));
                         if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(SUCCESS) First Queen " + m_PlacedQueens.size() + " placed at (" + x + "," + y + ").");
                         m_RemainingQueens--;
                         break;
                     } else {
                         List<Double> angles = new ArrayList<Double>();
-                        if (firsttest) {
-                            //TODO: Delete this before final submission
-                            x = 2;
-                            firsttest = false;
-                            m_PlacedQueens.add(new Queen(0, 0));
-                            //angles.add(m_PlacedQueens.get(0).findAngle(x,y));
-                            m_PlacedQueens.add(new Queen(5, 0));
-                            //angles.add(m_PlacedQueens.get(1).findAngle(x,y));
-                        }
+
                         boolean successfulPlace = true;
                         for (int j = 0; j < m_PlacedQueens.size(); j++) {
                             Queen existingQueen = m_PlacedQueens.get(j);

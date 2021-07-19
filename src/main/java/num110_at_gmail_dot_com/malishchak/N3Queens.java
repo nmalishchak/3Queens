@@ -53,7 +53,7 @@ public class N3Queens {
     public static char[] m_Board;
 
     public static BaseN3QueensAlgorithm m_CurrentAlgorithm = null;
-    public static int m_TargetAlgorithmIndex = 0;
+    public static int m_TargetAlgorithmIndex = 1;
     public static int m_TargetLoggingLevel = BaseN3QueensAlgorithm.LOGGING_LEVEL_SUMMARY;
 
     public static void parseArguments(String[] args)
