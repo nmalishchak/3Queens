@@ -3,6 +3,8 @@ package num110_at_gmail_dot_com.malishchak.algorithms;
 import num110_at_gmail_dot_com.malishchak.Queen;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
@@ -17,10 +19,12 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
     private int m_YStartPosition = 0;
     private int m_IterationCount = 0;
 
+    private HashMap<Integer, Integer> m_BlockedXPositions = new HashMap<Integer, Integer>();
+
     public AngleCheckScannerUndo(int targetQueens, int boardWidth, int boardHeight)
     {
         super(targetQueens, boardWidth, boardHeight);
-        m_Version = 1;
+        m_Version = 2;
         m_AlgorithmName = "AngleCheckScannerUndo";
         m_AlgorithmDescription = "Iterates row-by-row through the chess board placing queens.\n" +
                 "First queen is placed at (0,0), each following potential queen checks the angle\n" +
@@ -32,11 +36,12 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                 "two queens), or if two other queens are at precisely opposite angles of the new\n" +
                 "queen (new queen is the middle point of a line between two queens). When a new\n" +
                 "queen is placed, the algorithm automatically moves to the next row on the board.\n" +
-                "If a solution is not found, the algorithm discards the last-placed queen, and\n" +
-                "resumes processing from one position to the right of that last queen. If a\n" +
-                "solution is still not found, it will discard back to the queen before the last-\n" +
-                "discarded one. If returned to the first queen, it will move the first queen\n" +
-                "one position to the right and start again. When all start positions on the first\n" +
+                "If a solution is not found, the algorithm discards last-placed queens until one\n" +
+                "is reached where a solution can still be found (queens remaining <= rows\n" +
+                "remaining), and then resumes processing from one position to the right of that\n" +
+                "queen. This repeats each time a solution is not found. If the algorithm returns\n" +
+                "to the first queen, it will move the first queen one position to the right and\n" +
+                "start a new iteration. When all start positions for the first Queen on the first\n" +
                 "row are exhausted, the algorithm will give up.";
     }
 
@@ -57,9 +62,14 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                 }
                 for (int x = (y==m_YStartPosition ? m_XStartPosition : 0); x < m_BoardWidth; x++)
                 {
+                    if(m_BlockedXPositions.containsKey(x))
+                    {
+                        continue;
+                    }
                     if (m_PlacedQueens.isEmpty()) {
                         m_PlacedQueens.add(new Queen(x, y));
                         if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(SUCCESS) First Queen " + m_PlacedQueens.size() + " placed at (" + x + "," + y + ").");
+                        m_BlockedXPositions.put(x,x);
                         m_RemainingQueens--;
                         break;
                     } else {
@@ -118,6 +128,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                             //No Conflicts!
                             m_PlacedQueens.add(new Queen(x, y));
                             if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(SUCCESS) New Queen " + m_PlacedQueens.size() + " placed at (" + x + "," + y + ").");
+                            m_BlockedXPositions.put(x,x);
                             m_RemainingQueens--;
                             break;
                         }
@@ -160,7 +171,12 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                     //Remove all placed queens from the next possible index onwards
                     if (m_LoggingLevel >= LOGGING_LEVEL_DEBUG)
                         System.out.println("Removing " + (m_PlacedQueens.size() - m_LastRootQueenRemovedIndex) + " queens for revert from list of " + m_PlacedQueens.size() + " queens.");
-                    m_PlacedQueens.subList(m_LastRootQueenRemovedIndex, m_PlacedQueens.size()).clear();
+                    List<Queen> deletedQueens = m_PlacedQueens.subList(m_LastRootQueenRemovedIndex, m_PlacedQueens.size());
+                    for(int dq = 0; dq<deletedQueens.size(); dq++)
+                    {
+                        m_BlockedXPositions.remove(deletedQueens.get(dq).x);
+                    }
+                    deletedQueens.clear();
                     if (m_LoggingLevel >= LOGGING_LEVEL_DEBUG)
                         System.out.println("Post revert list of placed queens has " + m_PlacedQueens.size() + " queens.");
 
@@ -240,6 +256,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
             m_PlacedQueens.clear();
             m_RemainingQueens = m_TargetQueens;
             m_IterationCount++;
+            m_BlockedXPositions.clear();
             if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("XXX Retrying with Queen 1 X start position "+m_XStartPosition+". XXX\n\n");
         }
     }
