@@ -21,10 +21,10 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
 
     private HashMap<Integer, Integer> m_BlockedXPositions = new HashMap<Integer, Integer>();
 
-    public AngleCheckScannerUndo(int targetQueens, int boardWidth, int boardHeight)
+    public AngleCheckScannerUndo(int targetQueens, int boardWidth, int boardHeight, int startXOffset)
     {
-        super(targetQueens, boardWidth, boardHeight);
-        m_Version = 2;
+        super(targetQueens, boardWidth, boardHeight, startXOffset);
+        m_Version = 3;
         m_AlgorithmName = "AngleCheckScannerUndo";
         m_AlgorithmDescription = "Iterates row-by-row through the chess board placing queens.\n" +
                 "First queen is placed at (0,0), each following potential queen checks the angle\n" +
@@ -50,14 +50,19 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
         m_RemainingQueens = m_TargetQueens;
         m_PlacedQueens.clear();
         m_IterationCount = 1;
-
+        m_XStartPosition = m_StartXOffset;
         while(m_RemainingQueens!=0 &&!m_StartPositionsExhausted) {
             m_IterationTimerStart = System.currentTimeMillis();
 
             for (int y = m_YStartPosition; y < m_BoardHeight; y++)
             {
-                //Check if complete
+                //Check if completes
                 if (m_RemainingQueens == 0 || (m_PlacedQueens.size()>0 && !isSolutionPossibleIfQueenLast(m_PlacedQueens.size()-1))) {
+                    if(m_RemainingQueens != 0)
+                    {
+                        if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("X Solution not possible with "+m_RemainingQueens+" queens and "+(m_BoardHeight-y)+" rows remaining.");
+                    }
+                    checkBestRun();
                     break;
                 }
                 for (int x = (y==m_YStartPosition ? m_XStartPosition : 0); x < m_BoardWidth; x++)
@@ -235,7 +240,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
             return false;
         }
         Queen last = m_PlacedQueens.get(index);
-        return (m_BoardHeight-last.y>=m_RemainingQueens);// && last.x < (m_BoardWidth-1));
+        return (m_BoardHeight-last.y>m_RemainingQueens);// && last.x < (m_BoardWidth-1));
     }
 
     private void resetFirstQueen()

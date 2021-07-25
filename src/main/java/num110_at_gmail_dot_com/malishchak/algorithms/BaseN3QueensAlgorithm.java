@@ -19,6 +19,7 @@ public abstract class BaseN3QueensAlgorithm {
     protected int m_TargetQueens = -1;
     protected int m_BoardHeight = -1;
     protected int m_BoardWidth = -1;
+    protected int m_StartXOffset = 0;
     protected boolean m_KeepBestRun = true;
 
 
@@ -95,11 +96,12 @@ public abstract class BaseN3QueensAlgorithm {
         this.m_LoggingLevel = m_LoggingLevel;
     }
 
-    public BaseN3QueensAlgorithm(int targetQueens, int boardWidth, int boardHeight)
+    public BaseN3QueensAlgorithm(int targetQueens, int boardWidth, int boardHeight, int startXoffset)
     {
         this.m_TargetQueens=targetQueens;
         this.m_BoardWidth=boardWidth;
         this.m_BoardHeight=boardHeight;
+        this.m_StartXOffset=startXoffset;
     }
 
     public abstract boolean run();
