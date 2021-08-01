@@ -10,9 +10,9 @@ public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
     public List<Queen> m_PlacedQueens = new ArrayList<Queen>();
     public int m_RemainingQueens = 0;
 
-    public AngleCheckScannerFullRestart(int targetQueens, int boardWidth, int boardHeight)
+    public AngleCheckScannerFullRestart(int targetQueens, int boardWidth, int boardHeight, int startXOffset)
     {
-        super(targetQueens, boardWidth, boardHeight);
+        super(targetQueens, boardWidth, boardHeight, startXOffset);
         m_Version = 1;
         m_AlgorithmName = "AngleCheckScannerFullRestart";
         m_AlgorithmDescription = "Iterates row-by-row through the chess board placing queens.\n" +
@@ -36,7 +36,7 @@ public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
         long secondTimerDuration = 0;
         boolean firsttest = false;
         boolean startPositionsExhausted = false;
-        int xStartPosition = 0;
+        int xStartPosition = m_StartXOffset;
         int yStartPosition = 0;
         m_RemainingQueens = m_TargetQueens;
         while(m_RemainingQueens!=0 &&!startPositionsExhausted) {

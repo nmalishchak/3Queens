@@ -21,10 +21,10 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
 
     private HashMap<Integer, Integer> m_BlockedXPositions = new HashMap<Integer, Integer>();
 
-    public AngleCheckScannerUndo(int targetQueens, int boardWidth, int boardHeight)
+    public AngleCheckScannerUndo(int targetQueens, int boardWidth, int boardHeight, int startXOffset)
     {
-        super(targetQueens, boardWidth, boardHeight);
-        m_Version = 2;
+        super(targetQueens, boardWidth, boardHeight, startXOffset);
+        m_Version = 3;
         m_AlgorithmName = "AngleCheckScannerUndo";
         m_AlgorithmDescription = "Iterates row-by-row through the chess board placing queens.\n" +
                 "First queen is placed at (0,0), each following potential queen checks the angle\n" +
@@ -50,7 +50,10 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
         m_RemainingQueens = m_TargetQueens;
         m_PlacedQueens.clear();
         m_IterationCount = 1;
+        m_XStartPosition = m_StartXOffset;
 
+        //Begin iterating across the chess board, continue until there's a solution or every
+        //square in the first row have been exhausted
         while(m_RemainingQueens!=0 &&!m_StartPositionsExhausted) {
             m_IterationTimerStart = System.currentTimeMillis();
 
@@ -58,29 +61,42 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
             {
                 //Check if complete
                 if (m_RemainingQueens == 0 || (m_PlacedQueens.size()>0 && !isSolutionPossibleIfQueenLast(m_PlacedQueens.size()-1))) {
+                    if(m_RemainingQueens != 0)
+                    {
+                        //Done, but unsuccessful
+                        if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("X Solution not possible with "+m_RemainingQueens+" queens and "+(m_BoardHeight-y)+" rows remaining.");
+                    }
+                    checkBestRun();
                     break;
                 }
                 for (int x = (y==m_YStartPosition ? m_XStartPosition : 0); x < m_BoardWidth; x++)
                 {
+                    //Skip checking squares we already know are threatened
                     if(m_BlockedXPositions.containsKey(x))
                     {
                         continue;
                     }
+
                     if (m_PlacedQueens.isEmpty()) {
+                        //Place first queen in first position
                         m_PlacedQueens.add(new Queen(x, y));
                         if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(SUCCESS) First Queen " + m_PlacedQueens.size() + " placed at (" + x + "," + y + ").");
                         m_BlockedXPositions.put(x,x);
                         m_RemainingQueens--;
                         break;
                     } else {
+                        //Try to place second queen, if not threatened and not forming a line of 3 queens
                         List<Double> angles = new ArrayList<Double>();
 
                         boolean successfulPlace = true;
+
+                        //Check potential new queen against all already placed queens
                         for (int j = 0; j < m_PlacedQueens.size(); j++) {
                             Queen existingQueen = m_PlacedQueens.get(j);
                             double angle = existingQueen.findAngle(x, y);
                             if (m_LoggingLevel>=LOGGING_LEVEL_DEBUG)
                                 System.out.println("New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") has angle " + angle + " degrees to queen " + (j + 1) + " at (" + existingQueen.x + "," + existingQueen.y + ").");
+
                             if (Math.round(angle) % 45 == 0) {
                                 //Threatened
                                 if (m_LoggingLevel>=LOGGING_LEVEL_VERBOSE)
@@ -99,7 +115,8 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                                 if (m_LoggingLevel>=LOGGING_LEVEL_DEBUG)
                                     System.out.println("Checking angle " + angle + " and opposite " + oppositeAngle + ".");
                                 if (angles.contains(angle) || angles.contains(oppositeAngle)) {
-                                    //3 Queens in one line
+                                    //3 Queens in one line, existing hash map entry means at least one other queen at
+                                    //same or opposite angle to queen currently being checked and potential new queen
                                     if (m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) {
                                         Queen conflict = null;
                                         double conflictAngle;
@@ -120,6 +137,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                                     successfulPlace = false;
                                     break;
                                 } else {
+                                    //No conflicts found yet, store angle for future queen checks
                                     angles.add(angle);
                                 }
                             }
@@ -235,7 +253,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
             return false;
         }
         Queen last = m_PlacedQueens.get(index);
-        return (m_BoardHeight-last.y>=m_RemainingQueens);// && last.x < (m_BoardWidth-1));
+        return (m_BoardHeight-last.y>m_RemainingQueens);
     }
 
     private void resetFirstQueen()
