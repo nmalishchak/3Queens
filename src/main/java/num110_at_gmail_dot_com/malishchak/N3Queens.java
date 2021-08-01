@@ -4,6 +4,9 @@ import num110_at_gmail_dot_com.malishchak.algorithms.AngleCheckScannerFullRestar
 import num110_at_gmail_dot_com.malishchak.algorithms.AngleCheckScannerUndo;
 import num110_at_gmail_dot_com.malishchak.algorithms.BaseN3QueensAlgorithm;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  *  Primary program class to manage and run algorithms to solve the N-Queens problem
  *  Parses command line arguments, runs configured algorithm, and outputs results
@@ -315,6 +318,88 @@ public class N3Queens {
 
     }
 
+    /**
+     * Confirms that the found solution is correct
+     * @param queens List of queens places by the solution
+     * @return True if the solution is verified as correct, false otherwise.
+     */
+    public static boolean verifyResults(ArrayList<Queen> queens)
+    {
+        System.out.println("Verifying results...");
+
+        //Check all queens placed
+        if(queens.size() != m_TargetQueens)
+        {
+            System.out.println("SOLUTION REJECTED. Target was to place "+m_TargetQueens+" queens, solution placed "+queens.size()+".");
+            return false;
+        }
+
+        //Check to ensure no queens threaten another, and no three queens form a straight line at any angle
+        HashMap<Double, Integer> angles = new HashMap<Double, Integer>();
+        for(int i = 0; i < queens.size(); i++)
+        {
+            angles.clear();
+            Queen current = queens.get(i);
+            for (int j = 0; j < queens.size(); j++)
+            {
+                //Skip current queen
+                if(j==i)
+                {
+                    continue;
+                }
+
+                Double angle = current.findAngle(queens.get(j));
+                if(angle % 45d == 0d)
+                {
+                    System.out.println("SOLUTION REJECTED. Queen "+(i+1)+" threatened by Queen "+(j+1)+".");
+                    return false;
+                }
+                Double oppositeAngle = (angle > 0d ? angle-180d : angle +180d);
+                if(angles.containsKey(angle) || angles.containsKey(oppositeAngle))
+                {
+                    int secondConflict = (angles.containsKey(angle) ? angles.get(angle) : angles.get(oppositeAngle));
+                    System.out.println("SOLUTION REJECTED. Queen "+(i+1)+" on a line with Queens "+(secondConflict+1)+" and "+(j+1)+".");
+                    return false;
+                }
+                else
+                {
+                    angles.put(angle, j);
+                }
+            }
+        }
+        System.out.println("Solution verified!");
+        return true;
+    }
+
+    /**
+     * Recursively converts a given integer to an alphabetic base-26 value. For example, "28" = "ac"
+     * @param xPosition Integer to convert
+     * @return Alphabetic zero-indexed base-26 representation of xPosition
+     */
+    public static String getANLetters(int xPosition)
+    {
+        if(xPosition<26)
+        {
+            return ((char)(xPosition+'a')) + "";
+        }
+        else
+        {
+            int currentPosition = xPosition % 26;
+            return getANLetters((xPosition/26)-1) + ((char)(currentPosition+'a'));
+        }
+    }
+
+    /**
+     * Calculates the board position of a queen by converting its x,y coordinates to Algebraic
+     * Notation. For example, the upper left portion of the board (0,0) would equate to "a8"
+     * @param queen The Queen for which to find the Algebraic Notation of its position
+     * @return The Algebraic Notation location of the given queen
+     */
+    public static String getAlgebraicNotation(Queen queen)
+    {
+        return getANLetters(queen.x) + (m_BoardHeight-queen.y);
+    }
+
     public static void main(String[] args) {
         parseArguments(args);
         System.out.println("Argument Parsing complete. Queens: "+m_TargetQueens+", Board: "+m_BoardHeight+"x"+m_BoardWidth+", StartX: "+m_StartXOffset+".");
@@ -341,7 +426,7 @@ public class N3Queens {
 
         //Output algorithm to be run
         System.out.println("\nRunning algorithm \""+m_CurrentAlgorithm.getAlgorithmName()+".\" version "+m_CurrentAlgorithm.getVersion()+".");
-        System.out.println("\""+m_CurrentAlgorithm.getM_AlgorithmDescription()+"\"\n");
+        System.out.println("\""+m_CurrentAlgorithm.getAlgorithmDescription()+"\"\n");
 
         //Execute algorithm, keeping track of total time to run
         System.out.println("Placing Queens...");
@@ -364,7 +449,7 @@ public class N3Queens {
         for(int l=0; l<m_CurrentAlgorithm.getBestPlacedQueens().size(); l++)
         {
             Queen q = m_CurrentAlgorithm.getBestPlacedQueens().get(l);
-            System.out.println("\tQueen "+(l+1)+": ("+q.x+","+q.y+")");
+            System.out.println("\tQueen "+(l+1)+": "+getAlgebraicNotation(q)+" ("+q.x+","+q.y+")");
         }
 
         //Add Queen positions to board for printing
@@ -402,10 +487,22 @@ public class N3Queens {
 
         System.out.println("\n");
 
+        //If algorithm reported solution was not found, assume algorithm was correct
+        boolean verified = (success ? verifyResults(m_CurrentAlgorithm.getBestPlacedQueens()) : true);
+
+        System.out.println("\n");
+
         System.out.println("===RUN SUMMARY===");
         System.out.println("TARGET: "+m_TargetQueens+" Queens. BOARD: "+m_BoardWidth+"x"+m_BoardHeight+".");
         System.out.println("ALGORITHM: \""+m_CurrentAlgorithm.getAlgorithmName()+".\" VERSION: "+m_CurrentAlgorithm.getVersion()+".");
-        System.out.println("RESULT: "+(success ? "Success." : "Failure - Best Result was "+(m_TargetQueens - m_CurrentAlgorithm.getBestRemainingQueens())+" of "+m_TargetQueens+" placed."));
+        if(verified)
+        {
+            System.out.println("RESULT: "+(success ? "Success." : "Failure - Best Result was "+(m_TargetQueens - m_CurrentAlgorithm.getBestRemainingQueens())+" of "+m_TargetQueens+" placed."));
+        }
+        else
+        {
+            System.out.println("RESULT: Failure - Algorithm reported success but solution failed verification.");
+        }
         System.out.println("RUNTIME: "+timerDuration+"ms.");
     }
 }
