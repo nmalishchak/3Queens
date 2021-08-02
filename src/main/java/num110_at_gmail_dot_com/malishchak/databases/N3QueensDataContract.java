@@ -6,6 +6,19 @@ package num110_at_gmail_dot_com.malishchak.databases;
  * and column names within the table, as well as other constants used by the database.
  *
  * @author nmalishchak
+ * Copyright (C) 2021 Nick Malishchak
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 public final class N3QueensDataContract {
 
@@ -19,6 +32,10 @@ public final class N3QueensDataContract {
 
     }
 
+    /**
+     * The Results table stores the Results of runs, except for the list of all placed queens
+     * TODO: Add table for storing placed queens
+     */
     public static final class ResultsTable {
         public static final String TABLE_NAME = "results";
         public static final String COLUMN_NAME_ID = "id";
