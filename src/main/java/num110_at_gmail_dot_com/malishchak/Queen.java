@@ -4,14 +4,44 @@ package num110_at_gmail_dot_com.malishchak;
  * Basic container class for an instance of a queen on the chess board
  */
 public class Queen {
+
     /**
      * The x-coordinate for the Queen on the board
      */
-    public int x;
+    private int x;
+
+    /**
+     * @return The x-coordinate for the Queen on the board
+     */
+    public int getX() {
+        return x;
+    }
+
+    /**
+     * @param x New x-coordinate for Queen on the board
+     */
+    public void setX(int x) {
+        this.x = x;
+    }
+
     /**
      * The y-coordinate for the Queen on the board
      */
-    public int y;
+    private int y;
+
+    /**
+     * @return The y-coordinate for the Queen on the board
+     */
+    public int getY() {
+        return y;
+    }
+
+    /**
+     * @param y New y-coordinate for Queen on the board
+     */
+    public void setY(int y) {
+        this.y = y;
+    }
 
     /**
      * Finds the angle between this queen and another queen relative to the horizontal

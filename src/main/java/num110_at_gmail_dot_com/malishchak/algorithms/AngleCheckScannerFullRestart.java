@@ -1,14 +1,22 @@
 package num110_at_gmail_dot_com.malishchak.algorithms;
 
 import num110_at_gmail_dot_com.malishchak.Queen;
+import num110_at_gmail_dot_com.malishchak.Results;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Basic algorithm that tries to place queens on the board abiding by the N3Queens conditions. Uses each square on the
+ * first row beginning with the startXOffset and makes a single attempt to find a solution. If no solution found, it
+ * discards the entire run and restarts at the next square on the first row.
+ *
+ * @author nmalishchak
+ */
 public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
 {
-    public List<Queen> m_PlacedQueens = new ArrayList<Queen>();
-    public int m_RemainingQueens = 0;
+    private List<Queen> m_PlacedQueens = new ArrayList<Queen>();
+    private int m_RemainingQueens = 0;
 
     public AngleCheckScannerFullRestart(int targetQueens, int boardWidth, int boardHeight, int startXOffset)
     {
@@ -31,10 +39,9 @@ public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
     }
 
     @Override
-    public boolean run() {
+    public Results run() {
         long secondTimerStart = 0;
         long secondTimerDuration = 0;
-        boolean firsttest = false;
         boolean startPositionsExhausted = false;
         int xStartPosition = m_StartXOffset;
         int yStartPosition = 0;
@@ -63,11 +70,11 @@ public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
                             Queen existingQueen = m_PlacedQueens.get(j);
                             double angle = existingQueen.findAngle(x, y);
                             if (m_LoggingLevel>=LOGGING_LEVEL_DEBUG)
-                                System.out.println("New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") has angle " + angle + " degrees to queen " + (j + 1) + " at (" + existingQueen.x + "," + existingQueen.y + ").");
+                                System.out.println("New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") has angle " + angle + " degrees to queen " + (j + 1) + " at (" + existingQueen.getX() + "," + existingQueen.getY() + ").");
                             if (Math.round(angle) % 45 == 0) {
                                 //Threatened
                                 if (m_LoggingLevel>=LOGGING_LEVEL_VERBOSE)
-                                    System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") threatened by queen " + (j + 1) + " at (" + existingQueen.x + "," + existingQueen.y + ").");
+                                    System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") threatened by queen " + (j + 1) + " at (" + existingQueen.getX() + "," + existingQueen.getY() + ").");
                                 successfulPlace = false;
                                 break;
                             } else {
@@ -98,7 +105,7 @@ public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
                                             conflict = m_PlacedQueens.get(conflictIndex);
                                             conflictAngle = oppositeAngle;
                                         }
-                                        if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") on line with queen " + (j + 1) + " (" + existingQueen.x + "," + existingQueen.y + ") at angle " + angle + " degrees and queen " + (conflictIndex + 1) + " (" + conflict.x + "," + conflict.y + ") at angle " + conflictAngle + " degrees.");
+                                        if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") on line with queen " + (j + 1) + " (" + existingQueen.getX() + "," + existingQueen.getY() + ") at angle " + angle + " degrees and queen " + (conflictIndex + 1) + " (" + conflict.getX() + "," + conflict.getY() + ") at angle " + conflictAngle + " degrees.");
                                     }
                                     successfulPlace = false;
                                     break;
@@ -148,14 +155,26 @@ public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
         }
 
 
+        Results results = new Results();
+        results.setAlgorithm(m_AlgorithmName);
+        results.setAlgorithm_version(m_Version);
+        results.setTarget_queens(m_TargetQueens);
+        results.setBoard_height(m_BoardHeight);
+        results.setBoard_width(m_BoardWidth);
+        results.setDate(System.currentTimeMillis());
+
         if(m_RemainingQueens==0)
         {
             //Solution Found, this is the new best run
-            m_BestPlacedQueens = new ArrayList<Queen>(m_PlacedQueens);
-            m_BestRemainingQueens = m_RemainingQueens;
-            m_BestIteration = (xStartPosition+1);
+            results.setPlaced_queens(new ArrayList<Queen>(m_PlacedQueens));
+            results.setRemaining_queens(m_RemainingQueens);
+            results.setBest_iteration(xStartPosition+1);
+            results.setTotal_iterations(xStartPosition+1);
+            results.setSuccess(1);
+            results.setFirst_queen_x((m_PlacedQueens.size()>0 ? m_PlacedQueens.get(0).getX() : m_StartXOffset ));
+            results.setWas_best_run(1);
 
-            return true;
+            return results;
         }
         else
         {
@@ -166,7 +185,15 @@ public class AngleCheckScannerFullRestart extends BaseN3QueensAlgorithm
                 m_BestRemainingQueens = m_RemainingQueens;
                 m_BestIteration = (xStartPosition+1);
             }
-            return false;
+            results.setPlaced_queens(new ArrayList<Queen>(m_BestPlacedQueens));
+            results.setRemaining_queens(m_BestRemainingQueens);
+            results.setBest_iteration(m_BestIteration);
+            results.setTotal_iterations(xStartPosition+1);
+            results.setSuccess(0);
+            results.setFirst_queen_x((m_PlacedQueens.size()>0 ? m_PlacedQueens.get(0).getX() : m_StartXOffset ));
+            results.setWas_best_run((m_KeepBestRun ? 1: 0));
+
+            return results;
         }
     }
 }

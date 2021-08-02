@@ -3,9 +3,17 @@ package num110_at_gmail_dot_com.malishchak;
 import num110_at_gmail_dot_com.malishchak.algorithms.AngleCheckScannerFullRestart;
 import num110_at_gmail_dot_com.malishchak.algorithms.AngleCheckScannerUndo;
 import num110_at_gmail_dot_com.malishchak.algorithms.BaseN3QueensAlgorithm;
+import num110_at_gmail_dot_com.malishchak.databases.N3QueensDataContract;
+import num110_at_gmail_dot_com.malishchak.databases.N3QueensDatabaseAdapter;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 /**
  *  Primary program class to manage and run algorithms to solve the N-Queens problem
@@ -139,7 +147,7 @@ public class N3Queens {
                         }
                         catch (NumberFormatException e)
                         {
-                            System.out.println("Error parsing number of queens: "+ e);
+                            System.err.println("Error parsing number of queens: "+ e);
                             argumentParseError = true;
                         }
                     }
@@ -161,7 +169,7 @@ public class N3Queens {
                         }
                         catch (NumberFormatException e)
                         {
-                            System.out.println("Error parsing size of board:" + e);
+                            System.err.println("Error parsing size of board:" + e);
                             argumentParseError = true;
                         }
                     }
@@ -181,7 +189,7 @@ public class N3Queens {
                         }
                         catch (NumberFormatException e)
                         {
-                            System.out.println("Error parsing BoardX:" + e);
+                            System.err.println("Error parsing BoardX:" + e);
                             argumentParseError = true;
                         }
                     }
@@ -202,7 +210,7 @@ public class N3Queens {
                         }
                         catch (NumberFormatException e)
                         {
-                            System.out.println("Error parsing BoardY:" + e);
+                            System.err.println("Error parsing BoardY:" + e);
                             argumentParseError = true;
                         }
                     }
@@ -222,7 +230,7 @@ public class N3Queens {
                         }
                         catch (NumberFormatException e)
                         {
-                            System.out.println("Error parsing algorithm number:" + e);
+                            System.err.println("Error parsing algorithm number:" + e);
                             argumentParseError = true;
                         }
                     }
@@ -246,7 +254,7 @@ public class N3Queens {
                         }
                         catch (NumberFormatException e)
                         {
-                            System.out.println("Error parsing logging level:" + e);
+                            System.err.println("Error parsing logging level:" + e);
                             argumentParseError = true;
                         }
                     }
@@ -266,7 +274,7 @@ public class N3Queens {
                         }
                         catch (NumberFormatException e)
                         {
-                            System.out.println("Error parsing logging level:" + e);
+                            System.err.println("Error parsing logging level:" + e);
                             argumentParseError = true;
                         }
                     }
@@ -371,35 +379,6 @@ public class N3Queens {
         return true;
     }
 
-    /**
-     * Recursively converts a given integer to an alphabetic base-26 value. For example, "28" = "ac"
-     * @param xPosition Integer to convert
-     * @return Alphabetic zero-indexed base-26 representation of xPosition
-     */
-    public static String getANLetters(int xPosition)
-    {
-        if(xPosition<26)
-        {
-            return ((char)(xPosition+'a')) + "";
-        }
-        else
-        {
-            int currentPosition = xPosition % 26;
-            return getANLetters((xPosition/26)-1) + ((char)(currentPosition+'a'));
-        }
-    }
-
-    /**
-     * Calculates the board position of a queen by converting its x,y coordinates to Algebraic
-     * Notation. For example, the upper left portion of the board (0,0) would equate to "a8"
-     * @param queen The Queen for which to find the Algebraic Notation of its position
-     * @return The Algebraic Notation location of the given queen
-     */
-    public static String getAlgebraicNotation(Queen queen)
-    {
-        return getANLetters(queen.x) + (m_BoardHeight-queen.y);
-    }
-
     public static void main(String[] args) {
         parseArguments(args);
         System.out.println("Argument Parsing complete. Queens: "+m_TargetQueens+", Board: "+m_BoardHeight+"x"+m_BoardWidth+", StartX: "+m_StartXOffset+".");
@@ -431,8 +410,17 @@ public class N3Queens {
         //Execute algorithm, keeping track of total time to run
         System.out.println("Placing Queens...");
         timerStart = System.currentTimeMillis();
-        boolean success = m_CurrentAlgorithm.run();
+        Results results = m_CurrentAlgorithm.run();
         timerDuration = System.currentTimeMillis() - timerStart;
+        boolean success = results.getSuccess() > 0;
+
+        //Update results
+        results.setSolution_time_in_ms(timerDuration);
+
+        //If algorithm reported solution was not found, assume algorithm was correct
+        boolean verified = (success ? verifyResults(results.getPlaced_queens()) : true);
+        results.setVerified((verified ? 1 : 0 ));
+
 
         //Process and output results
         if(success) {
@@ -441,68 +429,53 @@ public class N3Queens {
         else
         {
             System.out.println("\n\nNo solution found, attempt completed in " + timerDuration + "ms total.");
-            System.out.println((m_KeepBestRun ? "Best" : "Final")+" Run (Iteration "+m_CurrentAlgorithm.getBestIteration()+"): "+m_CurrentAlgorithm.getBestPlacedQueens().size()+" of "+m_TargetQueens+" placed. (Remaining: "+m_CurrentAlgorithm.getBestRemainingQueens()+").");
+            System.out.println((m_KeepBestRun ? "Best" : "Final")+" Run (Iteration "+results.getBest_iteration()+"): "+results.getPlaced_queens().size()+" of "+m_TargetQueens+" placed. (Remaining: "+results.getRemaining_queens()+").");
         }
 
-        //Print (x,y) coordinates of all placed queens in returned result
-        System.out.println("Queens placed at:");
-        for(int l=0; l<m_CurrentAlgorithm.getBestPlacedQueens().size(); l++)
-        {
-            Queen q = m_CurrentAlgorithm.getBestPlacedQueens().get(l);
-            System.out.println("\tQueen "+(l+1)+": "+getAlgebraicNotation(q)+" ("+q.x+","+q.y+")");
-        }
-
-        //Add Queen positions to board for printing
-        System.out.println("");
-        m_Board = new char[m_BoardHeight * m_BoardWidth];
-        for (int i = 0; i < m_Board.length; i++) {
-            m_Board[i] = ' ';
-        }
-
-        for (int qIndex = 0; qIndex < m_CurrentAlgorithm.getBestPlacedQueens().size(); qIndex++) {
-            Queen q = m_CurrentAlgorithm.getBestPlacedQueens().get(qIndex);
-            m_Board[q.y * m_BoardWidth + q.x] = m_OutputQueenCharacter;
-        }
-
-        //Print final board
-        String topBottomBorder = "  +";
-        String squareLettering = "   ";
-        for (int bIndex = 0; bIndex < m_BoardWidth; bIndex++) {
-            topBottomBorder += "-";
-            squareLettering += (char)((bIndex%26)+97);
-        }
-        topBottomBorder+="+";
-        System.out.println(squareLettering);
-        System.out.println(topBottomBorder);
-        for (int yIndex = 0; yIndex < m_BoardHeight; yIndex++) {
-            int yValue = yIndex * m_BoardWidth;
-            System.out.format("%2d|", (m_BoardHeight-yIndex));
-            for (int xIndex = 0; xIndex < m_BoardWidth; xIndex++) {
-                System.out.print(m_Board[yValue + xIndex]);
-            }
-            System.out.print("|"+(m_BoardHeight-yIndex)+"\n");
-        }
-        System.out.println(topBottomBorder);
-        System.out.println(squareLettering);
-
+        results.printPlacedQueens();
+        results.printBoard();
+        System.out.println("\n");
+        results.printResultsSummary();
         System.out.println("\n");
 
-        //If algorithm reported solution was not found, assume algorithm was correct
-        boolean verified = (success ? verifyResults(m_CurrentAlgorithm.getBestPlacedQueens()) : true);
-
-        System.out.println("\n");
-
-        System.out.println("===RUN SUMMARY===");
-        System.out.println("TARGET: "+m_TargetQueens+" Queens. BOARD: "+m_BoardWidth+"x"+m_BoardHeight+".");
-        System.out.println("ALGORITHM: \""+m_CurrentAlgorithm.getAlgorithmName()+".\" VERSION: "+m_CurrentAlgorithm.getVersion()+".");
-        if(verified)
+        if(N3QueensDatabaseAdapter.addResults(results))
         {
-            System.out.println("RESULT: "+(success ? "Success." : "Failure - Best Result was "+(m_TargetQueens - m_CurrentAlgorithm.getBestRemainingQueens())+" of "+m_TargetQueens+" placed."));
+            System.out.println("Results saved to database.");
         }
         else
         {
-            System.out.println("RESULT: Failure - Algorithm reported success but solution failed verification.");
+            System.err.println("Results failed to save to database.");
         }
-        System.out.println("RUNTIME: "+timerDuration+"ms.");
+
+        //Print best result thus far for this problem set
+        System.out.println("\n");
+        System.out.println("Current Best Successful Solution For Problem Set: ");
+        ArrayList<Results> bestResults = N3QueensDatabaseAdapter.getResults("where "
+                + N3QueensDataContract.ResultsTable.COLUMN_NAME_TARGET_QUEENS + " = " + m_TargetQueens
+                + " AND " + N3QueensDataContract.ResultsTable.COLUMN_NAME_BOARD_WIDTH + " = " + m_BoardWidth
+                + " AND " + N3QueensDataContract.ResultsTable.COLUMN_NAME_BOARD_HEIGHT + " = " + m_BoardHeight
+                + " AND " + N3QueensDataContract.ResultsTable.COLUMN_NAME_SUCCESS + " = 1"
+                + " AND " + N3QueensDataContract.ResultsTable.COLUMN_NAME_VERIFIED + " = 1 "
+                + " ORDER BY " + N3QueensDataContract.ResultsTable.COLUMN_NAME_SOLUTION_TIME_IN_MS + " ASC");
+
+        if(bestResults==null)
+        {
+            System.err.println("Error finding best results.");
+        }
+        else if (bestResults.size() == 0)
+        {
+            System.err.println("No verified solutions yet found for this problem set.");
+        }
+        else
+        {
+            Results best = bestResults.get(0);
+            best.printResultsSummary();
+            Date date = new Date(best.getDate());
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            format.setTimeZone(TimeZone.getDefault());
+            String formatted = format.format(date);
+            System.out.println("DATE: "+ formatted +". STARTX: "+best.getFirst_queen_x());
+        }
     }
+
 }
