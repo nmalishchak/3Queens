@@ -1,6 +1,7 @@
 package num110_at_gmail_dot_com.malishchak.algorithms;
 
 import num110_at_gmail_dot_com.malishchak.Queen;
+import num110_at_gmail_dot_com.malishchak.Results;
 
 import java.util.ArrayList;
 
@@ -30,33 +31,6 @@ public abstract class BaseN3QueensAlgorithm {
     protected int m_BestIteration = 0;
     protected ArrayList<Queen> m_BestPlacedQueens = new ArrayList<Queen>();
 
-
-
-    /**
-     * @return List of placed Queens from best iteration, assuming 0,0 (origin) point is
-     * top-left of chess board
-     */
-    public ArrayList<Queen> getBestPlacedQueens()
-    {
-        return m_BestPlacedQueens;
-    }
-
-    /**
-     * @return Number of queens that remained unplaced after from the best iteration of the algorithm
-     */
-    public int getBestRemainingQueens()
-    {
-        return m_BestRemainingQueens;
-    }
-
-    /**
-     * @return Which iteration returned the best result. How an iteration is defined is a function of the
-     * algorithm implementing this base class.
-     */
-    public int getBestIteration()
-    {
-        return m_BestIteration;
-    }
 
     /**
      * @return The name of the N3QueensAlgorithm
@@ -142,9 +116,9 @@ public abstract class BaseN3QueensAlgorithm {
 
     /**
      * Executes the algorithm to find a solution to the N3Queens problem
-     * @return True if a solution is found, false if not
+     * @return The results from the run. Overall time is tracked by the main program
      */
-    public abstract boolean run();
+    public abstract Results run();
     
     
 }

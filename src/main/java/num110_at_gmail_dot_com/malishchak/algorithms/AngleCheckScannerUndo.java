@@ -1,11 +1,9 @@
 package num110_at_gmail_dot_com.malishchak.algorithms;
 
 import num110_at_gmail_dot_com.malishchak.Queen;
+import num110_at_gmail_dot_com.malishchak.Results;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
 {
@@ -14,7 +12,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
     private int m_LastRootQueenRemovedIndex = -1;
     private boolean m_StartPositionsExhausted = false;
     private long m_IterationTimerStart = 0;
-    private long m_IteratonTimerDuration = 0;
+    private long m_IterationTimerDuration = 0;
     private int m_XStartPosition = 0;
     private int m_YStartPosition = 0;
     private int m_IterationCount = 0;
@@ -46,7 +44,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
     }
 
     @Override
-    public boolean run() {
+    public Results run() {
         m_RemainingQueens = m_TargetQueens;
         m_PlacedQueens.clear();
         m_IterationCount = 1;
@@ -95,12 +93,12 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                             Queen existingQueen = m_PlacedQueens.get(j);
                             double angle = existingQueen.findAngle(x, y);
                             if (m_LoggingLevel>=LOGGING_LEVEL_DEBUG)
-                                System.out.println("New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") has angle " + angle + " degrees to queen " + (j + 1) + " at (" + existingQueen.x + "," + existingQueen.y + ").");
+                                System.out.println("New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") has angle " + angle + " degrees to queen " + (j + 1) + " at (" + existingQueen.getX() + "," + existingQueen.getY() + ").");
 
                             if (Math.round(angle) % 45 == 0) {
                                 //Threatened
                                 if (m_LoggingLevel>=LOGGING_LEVEL_VERBOSE)
-                                    System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") threatened by queen " + (j + 1) + " at (" + existingQueen.x + "," + existingQueen.y + ").");
+                                    System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") threatened by queen " + (j + 1) + " at (" + existingQueen.getX() + "," + existingQueen.getY() + ").");
                                 successfulPlace = false;
                                 break;
                             } else {
@@ -132,7 +130,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                                             conflict = m_PlacedQueens.get(conflictIndex);
                                             conflictAngle = oppositeAngle;
                                         }
-                                        if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") on line with queen " + (j + 1) + " (" + existingQueen.x + "," + existingQueen.y + ") at angle " + angle + " degrees and queen " + (conflictIndex + 1) + " (" + conflict.x + "," + conflict.y + ") at angle " + conflictAngle + " degrees.");
+                                        if(m_LoggingLevel>=LOGGING_LEVEL_VERBOSE) System.out.println("(FAILURE) New Queen "+(m_PlacedQueens.size()+1)+" at (" + x + "," + y + ") on line with queen " + (j + 1) + " (" + existingQueen.getX() + "," + existingQueen.getY() + ") at angle " + angle + " degrees and queen " + (conflictIndex + 1) + " (" + conflict.getX() + "," + conflict.getY() + ") at angle " + conflictAngle + " degrees.");
                                     }
                                     successfulPlace = false;
                                     break;
@@ -164,7 +162,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                     if(m_LoggingLevel>=LOGGING_LEVEL_DEBUG)
                     {
                         Queen q = m_PlacedQueens.get(nextRootIndex);
-                        System.out.println("Solution not possible from Queen "+(nextRootIndex+1)+" ("+q.x+","+q.y+").");
+                        System.out.println("Solution not possible from Queen "+(nextRootIndex+1)+" ("+q.getX()+","+q.getY()+").");
                     }
                     nextRootIndex--;
                 }
@@ -192,7 +190,7 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                     List<Queen> deletedQueens = m_PlacedQueens.subList(m_LastRootQueenRemovedIndex, m_PlacedQueens.size());
                     for(int dq = 0; dq<deletedQueens.size(); dq++)
                     {
-                        m_BlockedXPositions.remove(deletedQueens.get(dq).x);
+                        m_BlockedXPositions.remove(deletedQueens.get(dq).getX());
                     }
                     deletedQueens.clear();
                     if (m_LoggingLevel >= LOGGING_LEVEL_DEBUG)
@@ -200,31 +198,42 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
 
                     int oldRemaining = m_RemainingQueens;
                     m_RemainingQueens = (m_TargetQueens - m_PlacedQueens.size());
-                    m_XStartPosition = removed.x + 1; //for loop will auto-roll to next row if end of row
-                    m_YStartPosition = removed.y;
+                    m_XStartPosition = removed.getX() + 1; //for loop will auto-roll to next row if end of row
+                    m_YStartPosition = removed.getY();
 
                     if (m_LoggingLevel >= LOGGING_LEVEL_VERBOSE)
                     {
-                        System.out.println("X No solution found. Reverted back to placing Queen " + (m_LastRootQueenRemovedIndex + 1) + ", previously at (" + removed.x + "," + removed.y + "). Resuming at (" + m_XStartPosition + "," + m_YStartPosition + "), " + m_RemainingQueens + " remain.");
+                        System.out.println("X No solution found. Reverted back to placing Queen " + (m_LastRootQueenRemovedIndex + 1) + ", previously at (" + removed.getX() + "," + removed.getY() + "). Resuming at (" + m_XStartPosition + "," + m_YStartPosition + "), " + m_RemainingQueens + " remain.");
                     }
                 }
             }
             else
             {
-                if(m_LoggingLevel>=LOGGING_LEVEL_SUMMARY) System.out.println("!!! Success! Iteration "+(m_IterationCount)+" completed in "+m_IteratonTimerDuration+"ms.");
+                if(m_LoggingLevel>=LOGGING_LEVEL_SUMMARY) System.out.println("!!! Success! Iteration "+(m_IterationCount)+" completed in "+ m_IterationTimerDuration +"ms.");
             }
         }
 
+        Results results = new Results();
+        results.setAlgorithm(m_AlgorithmName);
+        results.setAlgorithm_version(m_Version);
+        results.setTarget_queens(m_TargetQueens);
+        results.setBoard_height(m_BoardHeight);
+        results.setBoard_width(m_BoardWidth);
+        results.setDate(System.currentTimeMillis());
 
         if(m_RemainingQueens==0)
         {
             if(m_LoggingLevel>=LOGGING_LEVEL_SUMMARY) System.out.println("!!! Solution found after "+m_IterationCount+" iterations.");
             //Solution Found, this is the new best run
-            m_BestPlacedQueens = new ArrayList<Queen>(m_PlacedQueens);
-            m_BestRemainingQueens = m_RemainingQueens;
-            m_BestIteration = m_IterationCount;
+            results.setPlaced_queens(new ArrayList<Queen>(m_PlacedQueens));
+            results.setRemaining_queens(m_RemainingQueens);
+            results.setBest_iteration(m_IterationCount);
+            results.setTotal_iterations(m_IterationCount);
+            results.setSuccess(1);
+            results.setFirst_queen_x((m_PlacedQueens.size()>0 ? m_PlacedQueens.get(0).getX() : m_StartXOffset ));
+            results.setWas_best_run(1);
 
-            return true;
+            return results;
         }
         else
         {
@@ -237,13 +246,21 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
                 m_BestRemainingQueens = m_RemainingQueens;
                 m_BestIteration = m_IterationCount;
             }
-            return false;
+            results.setPlaced_queens(new ArrayList<Queen>(m_BestPlacedQueens));
+            results.setRemaining_queens(m_BestRemainingQueens);
+            results.setBest_iteration(m_BestIteration);
+            results.setTotal_iterations(m_IterationCount);
+            results.setSuccess(0);
+            results.setFirst_queen_x((m_PlacedQueens.size()>0 ? m_PlacedQueens.get(0).getX() : m_StartXOffset ));
+            results.setWas_best_run((m_KeepBestRun ? 1: 0));
+
+            return results;
         }
     }
 
     private boolean isSolutionPossibleIfQueenLast(Queen last)
     {
-        return (m_BoardHeight-last.y>=m_RemainingQueens && last.x < (m_BoardWidth-1));
+        return (m_BoardHeight-last.getY()>=m_RemainingQueens && last.getX() < (m_BoardWidth-1));
     }
 
     private boolean isSolutionPossibleIfQueenLast(int index)
@@ -253,16 +270,16 @@ public class AngleCheckScannerUndo extends BaseN3QueensAlgorithm
             return false;
         }
         Queen last = m_PlacedQueens.get(index);
-        return (m_BoardHeight-last.y>m_RemainingQueens);
+        return (m_BoardHeight-last.getY()>m_RemainingQueens);
     }
 
     private void resetFirstQueen()
     {
         m_YStartPosition = 0;
         Queen q = m_PlacedQueens.get(0);
-        m_XStartPosition = q.x+1;
-        m_IteratonTimerDuration = System.currentTimeMillis() - m_IterationTimerStart;
-        if(m_LoggingLevel>=LOGGING_LEVEL_SUMMARY) System.out.println("XXX Iteration "+(m_IterationCount)+" completed in "+m_IteratonTimerDuration+"ms. No solution found at Queen 1 start position ("+q.x+","+q.y+"). XXX");
+        m_XStartPosition = q.getX()+1;
+        m_IterationTimerDuration = System.currentTimeMillis() - m_IterationTimerStart;
+        if(m_LoggingLevel>=LOGGING_LEVEL_SUMMARY) System.out.println("XXX Iteration "+(m_IterationCount)+" completed in "+ m_IterationTimerDuration +"ms. No solution found at Queen 1 start position ("+q.getX()+","+q.getY()+"). XXX");
         checkBestRun();
 
         if(m_XStartPosition>=m_BoardWidth)
