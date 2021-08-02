@@ -8,8 +8,11 @@ Algorithms attempting to solve the issue must implement the BaseN3QueensAlgorith
 
 The N3Queens tool will create a local SQLite database to store the results of runs. Upon completion of a run, a list of placed queens, an ASCII chess board, and a run summary will be displayed. Additionally, the best run for the problem attempted will also be displayed. If this is the first attempt for a given number of queens and chess board size, the current run will be displayed if it was successful.
 
+## Building
+N3Queens was developed using Gradle, Java version "16" 2021-03-16, with, Java(TM) SE Runtime Environment (build 16+36-2231), and Java HotSpot(TM) 64-Bit Server VM (build 16+36-2231, mixed mode, sharing). To build, execute either ./gradlew clean build (Linux) or ./gradlew.bat clean build from the command line in the N3Queen root folder, and the resulting distributions will be available in N3Queens/build/distributions. N3Queens also supports executing directly via Gradle using the command ./gradlew run --args="<N3Queens Args>." 
+
 ## Arguments
--n <NumberOfQueens>: Specifies the number of queens to attempt to place. Size of the board will be <NumberOfQueens>x<NumberOfQueens> unless otherwise specified using the -size or                      -BoardX/-BoardY switches.
+-n <NumberOfQueens>: Specifies the number of queens to attempt to place. Size of the board will be <NumberOfQueens>x<NumberOfQueens> unless otherwise specified using the -size or -BoardX/-BoardY switches.
 
 -size <board size>: Sets the size of the board to <board size>x<board size>. Overwritten by BoardX or BoardY switches
 
@@ -25,7 +28,7 @@ The N3Queens tool will create a local SQLite database to store the results of ru
 
 ## Benchmarks
 
-Single-Threaded Benchmarks on Windows 10 w/ i7-4890HQ @ 2.80 Ghz:  
+Single-Threaded Benchmarks on Windows 10 w/ i7-4890HQ @ 2.80 Ghz using a startX of 1:  
   
 ===RUN SUMMARY===
 TARGET: 20 Queens. BOARD: 20x20.
