@@ -60,9 +60,10 @@ public class N3Queens {
                                    "\t\t\t <board width>. Overwrites values from size switch\n" +
                                    "\t\t-BoardY <board height>: Sets the height of the board to\n" +
                                    "\t\t\t <board height>. Overwrites values from size switch\n" +
-                                   "\t\t-algorithm <#>: Sets which algorithm to use.\n" +
+                                   "\t\t-algorithm <#>: Sets which algorithm to use. Defaults to 1\n" +
+                                   "\t\t\t0=AngleCheckScannerFullRestart, 1=AngleCheckScannerUndo\n" +
                                    "\t\t-logging <#>. Sets logging level to 0-3. Defaults to 1.\n" +
-                                   "\t\t\t0=NONE, 1=SUMMARY, 2=VERBOSE, 3=DEBUG" +
+                                   "\t\t\t0=NONE, 1=SUMMARY, 2=VERBOSE, 3=DEBUG\n" +
                                    "\t\t-startX <#>. Sets the starting x position for algorithms.\n" +
                                    "\t\t\t Defaults to 0.\n" +
                                    "\n" +
@@ -148,187 +149,147 @@ public class N3Queens {
         //Did the user specify a specific height for the board? Overrides height from -size and -n
         boolean boardYSpecified = false;
 
-        //Parse arguments
-        for(int i =0; i< args.length; i++)
+        //Print Usage if no arguments provided
+        if(args.length==0)
         {
-            switch (args[i]) {
-                case "-n": { //Number of queens and size of board equal to provided argument. "-n 10"
-                    if((i+1)<args.length)
-                    {
-                        try {
-                            m_TargetQueens = Integer.parseInt(args[i + 1]);
-                            if(!boardYSpecified&&!boardSizeSpecified) m_BoardHeight = m_TargetQueens;
-                            if(!boardXSpecified&&!boardSizeSpecified) m_BoardWidth = m_TargetQueens;
-                            i++;
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            System.err.println("Error parsing number of queens: "+ e);
-                            argumentParseError = true;
-                        }
-                    }
-                    else
-                    {
-                        argumentParseError = true;
-                    }
-                    break;
-                }
-                case "-size": { //Size of board equal to provided argument. "-size 10"
-                    if((i+1)<args.length)
-                    {
-                        try {
-                            int value = Integer.parseInt(args[i + 1]);
-                            if(!boardYSpecified) m_BoardHeight = value;
-                            if(!boardXSpecified) m_BoardWidth = value;
-                            boardSizeSpecified = true;
-                            i++;
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            System.err.println("Error parsing size of board:" + e);
-                            argumentParseError = true;
-                        }
-                    }
-                    else
-                    {
-                        argumentParseError = true;
-                    }
-                    break;
-                }
-                case "-BoardX": { //Width of board equal to provided argument. "-BoardX 10"
-                    if((i+1)<args.length)
-                    {
-                        boardXSpecified = true;
-                        try {
-                            m_BoardWidth = Integer.parseInt(args[i + 1]);
-                            i++;
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            System.err.println("Error parsing BoardX:" + e);
-                            argumentParseError = true;
-                        }
-                    }
-                    else
-                    {
-                        argumentParseError = true;
-                    }
-                    break;
-                }
-                case "-BoardY": { //Height of board equal to provided argument
-                    boardYSpecified = true;
-                    if((i+1)<args.length)
-                    {
-                        try
-                        {
-                            m_BoardHeight = Integer.parseInt(args[i + 1]);
-                            i++;
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            System.err.println("Error parsing BoardY:" + e);
-                            argumentParseError = true;
-                        }
-                    }
-                    else
-                    {
-                        argumentParseError = true;
-                    }
-                    break;
-                }
-                case "-algorithm": { //Index of algorithm to run equal to provided argument. "-algorithm 1"
-                    if((i+1)<args.length)
-                    {
-                        try
-                        {
-                            m_TargetAlgorithmIndex = Integer.parseInt(args[i + 1]);
-                            i++;
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            System.err.println("Error parsing algorithm number:" + e);
-                            argumentParseError = true;
-                        }
-                    }
-                    else
-                    {
-                        argumentParseError = true;
-                    }
-                    break;
-                }
-                case "-logging": { // Max level of logging based on provided int argument. "-logging 1."
-                    if((i+1)<args.length)
-                    {
-                        try
-                        {
-                            m_TargetLoggingLevel = Integer.parseInt(args[i + 1]);
-                            if(m_TargetLoggingLevel<0 || m_TargetLoggingLevel>3)
-                            {
+            argumentParseError = true;
+        }
+        else {
+            //Parse arguments
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                    case "-n": { //Number of queens and size of board equal to provided argument. "-n 10"
+                        if ((i + 1) < args.length) {
+                            try {
+                                m_TargetQueens = Integer.parseInt(args[i + 1]);
+                                if (!boardYSpecified && !boardSizeSpecified) m_BoardHeight = m_TargetQueens;
+                                if (!boardXSpecified && !boardSizeSpecified) m_BoardWidth = m_TargetQueens;
+                                i++;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error parsing number of queens: " + e);
                                 argumentParseError = true;
                             }
-                            i++;
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            System.err.println("Error parsing logging level:" + e);
+                        } else {
                             argumentParseError = true;
                         }
+                        break;
                     }
-                    else
-                    {
-                        argumentParseError = true;
-                    }
-                    break;
-                }
-                case "-startX": { //First zero-indexed X position for an algorithm equal to provided argument. "-startX 1"
-                    if((i+1)<args.length)
-                    {
-                        try
-                        {
-                            m_StartXOffset = Integer.parseInt(args[i + 1]);
-                            i++;
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            System.err.println("Error parsing logging level:" + e);
+                    case "-size": { //Size of board equal to provided argument. "-size 10"
+                        if ((i + 1) < args.length) {
+                            try {
+                                int value = Integer.parseInt(args[i + 1]);
+                                if (!boardYSpecified) m_BoardHeight = value;
+                                if (!boardXSpecified) m_BoardWidth = value;
+                                boardSizeSpecified = true;
+                                i++;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error parsing size of board:" + e);
+                                argumentParseError = true;
+                            }
+                        } else {
                             argumentParseError = true;
                         }
+                        break;
                     }
-                    else
-                    {
+                    case "-BoardX": { //Width of board equal to provided argument. "-BoardX 10"
+                        if ((i + 1) < args.length) {
+                            boardXSpecified = true;
+                            try {
+                                m_BoardWidth = Integer.parseInt(args[i + 1]);
+                                i++;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error parsing BoardX:" + e);
+                                argumentParseError = true;
+                            }
+                        } else {
+                            argumentParseError = true;
+                        }
+                        break;
+                    }
+                    case "-BoardY": { //Height of board equal to provided argument
+                        boardYSpecified = true;
+                        if ((i + 1) < args.length) {
+                            try {
+                                m_BoardHeight = Integer.parseInt(args[i + 1]);
+                                i++;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error parsing BoardY:" + e);
+                                argumentParseError = true;
+                            }
+                        } else {
+                            argumentParseError = true;
+                        }
+                        break;
+                    }
+                    case "-algorithm": { //Index of algorithm to run equal to provided argument. "-algorithm 1"
+                        if ((i + 1) < args.length) {
+                            try {
+                                m_TargetAlgorithmIndex = Integer.parseInt(args[i + 1]);
+                                i++;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error parsing algorithm number:" + e);
+                                argumentParseError = true;
+                            }
+                        } else {
+                            argumentParseError = true;
+                        }
+                        break;
+                    }
+                    case "-logging": { // Max level of logging based on provided int argument. "-logging 1."
+                        if ((i + 1) < args.length) {
+                            try {
+                                m_TargetLoggingLevel = Integer.parseInt(args[i + 1]);
+                                if (m_TargetLoggingLevel < 0 || m_TargetLoggingLevel > 3) {
+                                    argumentParseError = true;
+                                }
+                                i++;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error parsing logging level:" + e);
+                                argumentParseError = true;
+                            }
+                        } else {
+                            argumentParseError = true;
+                        }
+                        break;
+                    }
+                    case "-startX": { //First zero-indexed X position for an algorithm equal to provided argument. "-startX 1"
+                        if ((i + 1) < args.length) {
+                            try {
+                                m_StartXOffset = Integer.parseInt(args[i + 1]);
+                                i++;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error parsing logging level:" + e);
+                                argumentParseError = true;
+                            }
+                        } else {
+                            argumentParseError = true;
+                        }
+                        break;
+                    }
+                    default: {
+                        //Unrecognized command line argument provided
                         argumentParseError = true;
                     }
+                }
+
+                //If error in parsing, stop processing arguments
+                if (argumentParseError) {
                     break;
                 }
-                default:
-                {
-                    //Unrecognized command line argument provided
+            }
+
+            switch (m_TargetAlgorithmIndex) {
+                case 0: {
+                    m_CurrentAlgorithm = new AngleCheckScannerFullRestart(m_TargetQueens, m_BoardWidth, m_BoardHeight, m_StartXOffset);
+                    break;
+                }
+                case 1: {
+                    m_CurrentAlgorithm = new AngleCheckScannerUndo(m_TargetQueens, m_BoardWidth, m_BoardHeight, m_StartXOffset);
+                    break;
+                }
+                default: {
                     argumentParseError = true;
                 }
-            }
-
-            //If error in parsing, stop processing arguments
-            if(argumentParseError)
-            {
-                break;
-            }
-        }
-
-        switch (m_TargetAlgorithmIndex)
-        {
-            case 0:
-            {
-                m_CurrentAlgorithm = new AngleCheckScannerFullRestart(m_TargetQueens, m_BoardWidth, m_BoardHeight, m_StartXOffset);
-                break;
-            }
-            case 1:
-            {
-                m_CurrentAlgorithm = new AngleCheckScannerUndo(m_TargetQueens, m_BoardWidth, m_BoardHeight, m_StartXOffset);
-                break;
-            }
-            default:
-            {
-                argumentParseError = true;
             }
         }
 

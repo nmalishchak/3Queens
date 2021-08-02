@@ -65,7 +65,7 @@ public class Queen {
      */
     public double findAngle(Queen other)
     {
-        return Math.toDegrees(Math.atan2(y-other.y, x-other.x));
+        return findAngle(other.getX(), other.getY());
     }
 
     /**
